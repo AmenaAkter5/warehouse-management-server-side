@@ -1,7 +1,9 @@
 
-// require express, cors
+// require express, cors, mongodb and dotenv to secure database pass
 const express = require('express');
 const cors = require('cors');
+const { MongoClient, ServerApiVersion } = require('mongodb');
+require('dotenv').config();
 
 
 // declare app and port
@@ -12,6 +14,43 @@ const port = process.env.PORT || 5000;
 // use middleware
 app.use(cors());
 app.use(express.json());
+
+
+
+// connect with mongo database
+
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pcp7m.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
+
+// set connection function
+
+async function run() {
+    try {
+        await client.connect();
+
+        // fruits collection
+        const fruitsCollection = client.db("warehouse").collection("fruits");
+
+
+        // Make API : get data from server [get all fruit]
+        // link: http://localhost:5000/fruits
+
+        app.get('/fruits', async (req, res) => {
+            const query = {};
+            const cursor = fruitsCollection.find(query);
+            const fruits = await cursor.toArray();
+            res.send(fruits);
+        })
+    }
+    finally {
+        // client.close();
+    }
+}
+
+
+run().catch(console.dir);
+
 
 
 // Make API : check server root
