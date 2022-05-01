@@ -58,7 +58,20 @@ async function run() {
         })
 
 
-        // delete data : delete a specific fruit
+        // POST item : add a new item
+
+        // get data from client side
+        // post data to server
+        // link: http://localhost:5000/fruits
+
+        app.post('/fruits', async (req, res) => {
+            const newItem = req.body;
+            const result = await fruitsCollection.insertOne(newItem);
+            res.send(result);
+        })
+
+
+        // delete data : delete a specific fruit item
         // link: http://localhost:5000/fruits/${id}
 
         app.delete('/fruits/:id', async (req, res) => {
