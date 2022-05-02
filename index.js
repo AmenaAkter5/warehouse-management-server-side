@@ -71,6 +71,24 @@ async function run() {
         })
 
 
+        // update data : update a user
+        // link: http://localhost:5000/fruits/${id}
+
+        app.put('/fruits/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatedItem = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    quantity: updatedItem.quantity
+                }
+            };
+            const result = await fruitsCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+
+
         // delete data : delete a specific fruit item
         // link: http://localhost:5000/fruits/${id}
 
