@@ -22,7 +22,6 @@ app.use(express.json());
 
 function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
-    console.log('inside verify jwt', authHeader);
     if (!authHeader) {
         return res.status(401).send({ message: 'unauthorized access' })
     }
@@ -189,6 +188,17 @@ async function run() {
         app.post('/items', async (req, res) => {
             const myItem = req.body;
             const result = await myItemsCollection.insertOne(myItem);
+            res.send(result);
+        })
+
+
+        // delete data : delete a specific fruit item
+        // link: http://localhost:5000/items/${id}
+
+        app.delete('/items/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await myItemsCollection.deleteOne(query);
             res.send(result);
         })
 
