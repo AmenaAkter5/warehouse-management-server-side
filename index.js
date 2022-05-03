@@ -1,9 +1,10 @@
 
-// require express, cors, mongodb and dotenv to secure database pass
+// require express, cors, mongodb, jwt and dotenv to secure database pass
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
+const jwt = require('jsonwebtoken');
 
 
 // declare app and port
@@ -14,6 +15,27 @@ const port = process.env.PORT || 5000;
 // use middleware
 app.use(cors());
 app.use(express.json());
+
+
+
+// verify jwt
+
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization;
+    console.log('inside verify jwt', authHeader);
+    if (!authHeader) {
+        return res.status(401).send({ message: 'unauthorized access' })
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(403).send({ message: 'Forbidden access' });
+        }
+        console.log('decoded', decoded);
+        req.decoded = decoded;
+        next();
+    })
+}
 
 
 // heroku link:
@@ -34,6 +56,23 @@ async function run() {
 
         // fruits collection
         const fruitsCollection = client.db("warehouse").collection("fruits");
+
+        // create my items collection in database
+        const myItemsCollection = client.db('warehouse').collection('myItems');
+
+
+
+        // Authentication : JWT issue
+        // link: http://localhost:5000/login
+
+        app.post('/login', (req, res) => {
+            const user = req.body;
+            const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+                expiresIn: '1d'
+            });
+            res.send({ accessToken });
+        })
+
 
 
         // Make API : get data from server [get all fruit data]
@@ -98,6 +137,61 @@ async function run() {
             const result = await fruitsCollection.deleteOne(query);
             res.send(result);
         })
+
+
+
+        // My Items collection API
+
+        // Make API : get data from server [get all items]
+        // link: http://localhost:5000/items
+
+        app.get('/items', verifyJWT, async (req, res) => {
+            // const authHeader = req.headers.authorization;
+            // console.log(authHeader);
+            const decodedEmail = req.decoded.email;
+            const email = req.query.email;
+            // console.log(email);
+            /* 
+            const query = { email };
+            // const query = { email: email };
+            const cursor = orderCollection.find(query);
+            const orders = await cursor.toArray();
+            res.send(orders); 
+            */
+            if (email === decodedEmail) {
+                const query = { email };
+                // const query = { email: email };
+                const cursor = myItemsCollection.find(query);
+                const myItems = await cursor.toArray();
+                res.send(myItems);
+            }
+            else {
+                res.status(403).send({ message: 'Forbidden access' });
+            }
+        })
+
+
+        /* app.get('/items', async (req, res) => {
+            const email = req.query.email;
+            const query = { email };
+            const cursor = myItemsCollection.find(query);
+            const myItems = await cursor.toArray();
+            res.send(myItems);
+        }) */
+
+
+        // POST items : add myItemscollection
+
+        // get data from client side
+        // post data to server
+        // link: http://localhost:5000/items
+
+        app.post('/items', async (req, res) => {
+            const myItem = req.body;
+            const result = await myItemsCollection.insertOne(myItem);
+            res.send(result);
+        })
+
     }
     finally {
         // client.close();
