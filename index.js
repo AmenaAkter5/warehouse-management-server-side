@@ -37,10 +37,6 @@ function verifyJWT(req, res, next) {
 }
 
 
-// heroku link:
-// https://pure-cliffs-64798.herokuapp.com/
-
-
 // connect with mongo database
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pcp7m.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
@@ -62,8 +58,6 @@ async function run() {
 
 
         // Authentication : JWT issue
-        // link: http://localhost:5000/login
-
         app.post('/login', (req, res) => {
             const user = req.body;
             const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
@@ -74,9 +68,10 @@ async function run() {
 
 
 
-        // Make API : get data from server [get all fruit data]
-        // link: http://localhost:5000/fruits
 
+        // fruits collection API 
+
+        // Make API : get all fruit data from server
         app.get('/fruits', async (req, res) => {
             const query = {};
             const cursor = fruitsCollection.find(query);
@@ -86,8 +81,6 @@ async function run() {
 
 
         // get data : get a specific fruit item data
-        // link: http://localhost:5000/fruits/${id}
-
         app.get('/fruits/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
@@ -96,12 +89,7 @@ async function run() {
         })
 
 
-        // POST item : add a new item
-
-        // get data from client side
-        // post data to server
-        // link: http://localhost:5000/fruits
-
+        // POST item : add a new fruit item
         app.post('/fruits', async (req, res) => {
             const newItem = req.body;
             const result = await fruitsCollection.insertOne(newItem);
@@ -109,9 +97,7 @@ async function run() {
         })
 
 
-        // update data : update a user
-        // link: http://localhost:5000/fruits/${id}
-
+        // update data : update a fruit item
         app.put('/fruits/:id', async (req, res) => {
             const id = req.params.id;
             const updatedItem = req.body;
@@ -128,8 +114,6 @@ async function run() {
 
 
         // delete data : delete a specific fruit item
-        // link: http://localhost:5000/fruits/${id}
-
         app.delete('/fruits/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -139,27 +123,15 @@ async function run() {
 
 
 
+
         // My Items collection API
 
-        // Make API : get data from server [get all items]
-        // link: http://localhost:5000/items
-
+        // Make API : get all items from server
         app.get('/items', verifyJWT, async (req, res) => {
-            // const authHeader = req.headers.authorization;
-            // console.log(authHeader);
             const decodedEmail = req.decoded.email;
             const email = req.query.email;
-            // console.log(email);
-            /* 
-            const query = { email };
-            // const query = { email: email };
-            const cursor = orderCollection.find(query);
-            const orders = await cursor.toArray();
-            res.send(orders); 
-            */
             if (email === decodedEmail) {
                 const query = { email };
-                // const query = { email: email };
                 const cursor = myItemsCollection.find(query);
                 const myItems = await cursor.toArray();
                 res.send(myItems);
@@ -170,21 +142,8 @@ async function run() {
         })
 
 
-        /* app.get('/items', async (req, res) => {
-            const email = req.query.email;
-            const query = { email };
-            const cursor = myItemsCollection.find(query);
-            const myItems = await cursor.toArray();
-            res.send(myItems);
-        }) */
-
 
         // POST items : add myItemscollection
-
-        // get data from client side
-        // post data to server
-        // link: http://localhost:5000/items
-
         app.post('/items', async (req, res) => {
             const myItem = req.body;
             const result = await myItemsCollection.insertOne(myItem);
@@ -192,9 +151,8 @@ async function run() {
         })
 
 
-        // delete data : delete a specific fruit item
-        // link: http://localhost:5000/items/${id}
 
+        // delete data : delete a specific fruit item
         app.delete('/items/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
