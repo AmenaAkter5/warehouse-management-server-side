@@ -36,10 +36,12 @@ function verifyJWT(req, res, next) {
 }
 
 
+
 // connect with mongo database
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pcp7m.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
 
 
 // set connection function
@@ -50,9 +52,6 @@ async function run() {
 
         // fruits collection
         const fruitsCollection = client.db("warehouse").collection("fruits");
-
-        // create my items collection in database
-        const myItemsCollection = client.db('warehouse').collection('myItems');
 
 
 
@@ -79,6 +78,7 @@ async function run() {
         })
 
 
+
         // get data : get a specific fruit item data
         app.get('/fruits/:id', async (req, res) => {
             const id = req.params.id;
@@ -88,12 +88,14 @@ async function run() {
         })
 
 
+
         // POST item : add a new fruit item
         app.post('/fruits', async (req, res) => {
             const newItem = req.body;
             const result = await fruitsCollection.insertOne(newItem);
             res.send(result);
         })
+
 
 
         // update data : update a fruit item
@@ -112,6 +114,7 @@ async function run() {
         })
 
 
+
         // delete data : delete a specific fruit item
         app.delete('/fruits/:id', async (req, res) => {
             const id = req.params.id;
@@ -122,15 +125,13 @@ async function run() {
 
 
 
-
         // My Items collection API
 
-        // Make API : get all items from server
-        app.get('/fruits', verifyJWT, async (req, res) => {
+        // Make API : get specific fruit items for unique user from server
+        app.get('/items', verifyJWT, async (req, res) => {
 
             const decodedEmail = req.decoded.email;
             const email = req.query.email;
-            // console.log(email);
 
             if (email === decodedEmail) {
                 const query = { email };
@@ -142,42 +143,6 @@ async function run() {
                 res.status(403).send({ message: 'Forbidden access' });
             }
         })
-
-        // Make API : get all items from server
-        /* app.get('/items', verifyJWT, async (req, res) => {
-
-            const decodedEmail = req.decoded.email;
-            const email = req.query.email;
-
-            if (email === decodedEmail) {
-                const query = { email };
-                const cursor = myItemsCollection.find(query);
-                const myItems = await cursor.toArray();
-                res.send(myItems);
-            }
-            else {
-                res.status(403).send({ message: 'Forbidden access' });
-            }
-        }) */
-
-
-
-        // POST items : add myItemscollection
-        /* app.post('/items', async (req, res) => {
-            const myItem = req.body;
-            const result = await fruitsCollection.insertOne(myItem);
-            res.send(result);
-        }) */
-
-
-
-        // delete data : delete a specific fruit item
-        /* app.delete('/items/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const result = await fruitsCollection.deleteOne(query);
-            res.send(result);
-        }) */
 
     }
     finally {
