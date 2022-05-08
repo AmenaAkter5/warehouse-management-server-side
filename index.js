@@ -30,7 +30,6 @@ function verifyJWT(req, res, next) {
         if (err) {
             return res.status(403).send({ message: 'Forbidden access' });
         }
-        console.log('decoded', decoded);
         req.decoded = decoded;
         next();
     })
@@ -127,9 +126,29 @@ async function run() {
         // My Items collection API
 
         // Make API : get all items from server
-        app.get('/items', verifyJWT, async (req, res) => {
+        app.get('/fruits', verifyJWT, async (req, res) => {
+
             const decodedEmail = req.decoded.email;
             const email = req.query.email;
+            // console.log(email);
+
+            if (email === decodedEmail) {
+                const query = { email };
+                const cursor = fruitsCollection.find(query);
+                const myItems = await cursor.toArray();
+                res.send(myItems);
+            }
+            else {
+                res.status(403).send({ message: 'Forbidden access' });
+            }
+        })
+
+        // Make API : get all items from server
+        /* app.get('/items', verifyJWT, async (req, res) => {
+
+            const decodedEmail = req.decoded.email;
+            const email = req.query.email;
+
             if (email === decodedEmail) {
                 const query = { email };
                 const cursor = myItemsCollection.find(query);
@@ -139,26 +158,26 @@ async function run() {
             else {
                 res.status(403).send({ message: 'Forbidden access' });
             }
-        })
+        }) */
 
 
 
         // POST items : add myItemscollection
-        app.post('/items', async (req, res) => {
+        /* app.post('/items', async (req, res) => {
             const myItem = req.body;
-            const result = await myItemsCollection.insertOne(myItem);
+            const result = await fruitsCollection.insertOne(myItem);
             res.send(result);
-        })
+        }) */
 
 
 
         // delete data : delete a specific fruit item
-        app.delete('/items/:id', async (req, res) => {
+        /* app.delete('/items/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
-            const result = await myItemsCollection.deleteOne(query);
+            const result = await fruitsCollection.deleteOne(query);
             res.send(result);
-        })
+        }) */
 
     }
     finally {
