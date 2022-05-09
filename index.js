@@ -7,9 +7,11 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
 
+
 // declare app and port
 const app = express();
 const port = process.env.PORT || 5000;
+
 
 
 // use middleware
@@ -56,6 +58,7 @@ async function run() {
 
 
         // Authentication : JWT issue
+
         app.post('/login', (req, res) => {
             const user = req.body;
             const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
@@ -98,15 +101,18 @@ async function run() {
 
 
 
-        // update data : update a fruit item
+        // update data : update a fruit item's quantity
         app.put('/fruits/:id', async (req, res) => {
+
             const id = req.params.id;
             const updatedItem = req.body;
+
             const filter = { _id: ObjectId(id) };
             const options = { upsert: true };
+
             const updatedDoc = {
                 $set: {
-                    quantity: updatedItem.quantity
+                    quantity: updatedItem.quantity,
                 }
             };
             const result = await fruitsCollection.updateOne(filter, updatedDoc, options);
@@ -125,7 +131,7 @@ async function run() {
 
 
 
-        // My Items collection API
+        // get My Items API
 
         // Make API : get specific fruit items for unique user from server
         app.get('/items', verifyJWT, async (req, res) => {
